@@ -1,0 +1,10 @@
+final_clip.write_videofile(
+            self.save_path,
+            fps=24,
+            codec="libx264",
+            audio_codec="aac",
+            preset="ultrafast",
+            threads=8,
+            bitrate="500k",
+            ffmpeg_params=["-pix_fmt", "yuv420p", "-crf", "40"]
+        )

@@ -1,0 +1,17 @@
+venv/
+temp/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+
+*.png
+temp/
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.flv
+*.wmv
