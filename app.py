@@ -336,14 +336,9 @@ class Widget(QWidget):
         initial_images = [
             ("3.png", "test1"),
             ("4.png", "test2"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
-            ("temp\images\edited_20250214_092949.png", "test3"),
+            ("4.png", "test2"),
+            ("4.png", "test2"),
+            ("5.jpg", "test2"),
         ]
         
         for img_path, text in initial_images:

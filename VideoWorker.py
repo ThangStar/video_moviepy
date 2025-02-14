@@ -1,4 +1,3 @@
-
 # This Python file uses the following encoding: utf-8
 
 from PySide6.QtCore import QThread, Signal
@@ -18,52 +17,95 @@ class VideoWorker(QThread):
         self.progress.emit("Đang tạo video từ ảnh...")
         
         # Kích thước tổng thể của video
-        total_width = 200  # Tổng chiều rộng video
+        total_width = 300
         screen_height = 100
-        image_duration = 5  # Thời gian mỗi hình
-        image_width = 50  # Kích thước cố định cho mỗi hình    
-        final_duration = len(self.media_items) * image_duration
+        image_duration = 5
+        image_width = 50
+        target_x = 10 - image_width  # Vị trí x mục tiêu để cạnh phải của hình = 10
+        # Tính toán lại thời lượng video dựa trên thời điểm hình thứ 5 về vị trí target_x
+        distance_to_move = (4 * image_width + image_width) - target_x  # Khoảng cách từ vị trí bắt đầu đến target_x
+        movement_time = (distance_to_move / image_width) * image_duration
+        final_duration = (5 * image_duration) + movement_time
         
         def ease_out(t):
-            
-            # Hàm Ease Out Cubic
-            t = t / 5  # Chuẩn hóa thời gian về khoảng [0,1]
+            t = t / 5  # Giữ nguyên vì đã phù hợp với 5s
             return 1 - pow(1 - t, 3)
         
         def create_clip(img_path, index, start_time):
             # Tạo animation cho hình ảnh với nền trong suốt
-            img = ImageClip(img_path, transparent=True)
-            img = img.resized(width=image_width, height=screen_height)
-            
+            img = ImageClip(img_path)
+            # Chỉ resize các hình từ 1-4
+            if index < 4:
+                img = img.resized(width=image_width, height=screen_height)
+            else:
+                img = img.resized(height=screen_height)
             def make_frame(t):
-                # Tính góc xoay
+                # Tính góc xoay (chỉ cho 4 ảnh đầu tiên)
                 local_t = t - start_time
-                if local_t < 5:  # Kéo dài hiệu ứng xoay trong 5 giây
-                    progress = ease_out(local_t)
-                    angle = 45 * (1 - progress)  # Sử dụng progress thay vì local_t/5
+                if index < 4:  # Chỉ xoay 4 ảnh đầu
+                    if local_t < 5:  # Tăng thời gian xoay lên 5 giây
+                        progress = ease_out(local_t)
+                        angle = 45 * (1 - progress)
+                    else:
+                        angle = 0
+                    
+                    # Tạo clip mới với góc xoay tương ứng
+                    rotated = VideoClip(lambda t: img.get_frame(0), duration=0.1)
+                    if angle != 0:
+                        import moviepy.video.fx as vfx
+                        rotated = vfx.Rotate(angle=angle, unit='deg', expand=True, resample='bicubic', bg_color=None).apply(rotated)
+                    return rotated.get_frame(0)
                 else:
-                    angle = 0
-                
-                # Tạo clip mới với góc xoay tương ứng
-                rotated = VideoClip(lambda t: img.get_frame(0), duration=0.1)
-                if angle != 0:
-                    import moviepy.video.fx as vfx
-                    rotated = vfx.Rotate(angle=angle, unit='deg', expand=True, resample='bicubic', bg_color=None).apply(rotated)
-                return rotated.get_frame(0)
+                    # Không xoay cho các ảnh từ index 4 trở đi
+                    return img.get_frame(0)
             
             def create_position(t):
                 local_t = t - start_time
-                if t < start_time:  # Chưa đến lượt
+                
+                if t < start_time:
                     return (total_width, 0)
-                elif local_t < 5:  # Di chuyển trong 5 giây
-                    # Tính toán vị trí cuối cùng dựa trên index
-                    final_x = index * image_width
+                elif local_t < 5:  # Animation đầu tiên 5s
+                    final_x = min(index, 4) * image_width
                     progress = ease_out(local_t)
-                    # Di chuyển từ phải sang trái đến vị trí cuối với easing
                     current_x = total_width - (total_width - final_x) * progress
                     return (current_x, 0)
-                else:  # Đã vào vị trí
-                    return (index * image_width, 0)
+                else:
+                    current_time = t
+                    current_index = int(current_time // image_duration)
+                    
+                    if current_index < 5:  # 4 hình đầu giữ nguyên vị trí
+                        return (index * image_width, 0)
+                    else:
+                        # Xử lý cho hình từ số 5 trở đi
+                        if current_index >= 4:  # Sau khi hình thứ 4 đã xuất hiện
+                            if current_index >= index:  # Đến lượt hoặc đã qua lượt hình hiện tại
+                                # Vị trí ban đầu: ngay sau hình 4
+                                start_x = 4 * image_width + image_width
+                                # Khoảng cách giữa các hình
+                                offset = (index - 5) * image_width
+                                initial_x = start_x + offset
+                                
+                                # Thời gian từ khi hình thứ 5 xuất hiện
+                                time_since_fifth = current_time - (5 * image_duration)
+                                if time_since_fifth > 0:
+                                    # Di chuyển sang trái với linear để chuyển động đều
+                                    max_time = movement_time
+                                    move_progress = min(time_since_fifth / max_time, 1)
+                                    move_distance = move_progress * distance_to_move
+                                    new_x = initial_x - move_distance
+                                    
+                                    # Chỉ kiểm tra điều kiện ra khỏi màn hình cho các hình từ số 6 trở đi
+                                    if index > 4 and new_x + image_width < 0:
+                                        return (total_width * 4, 0)  # Di chuyển hình ra xa khỏi khung hình
+                                    
+                                    # Bỏ kiểm tra x < 1 cho hình số 5
+                                    if index < 4 and new_x < 1:
+                                        new_x = 0
+                                    return (new_x, 0)
+                            else:
+                                return (total_width, 0)
+                        else:
+                            return (total_width, 0)
             
             # Tạo clip với hiệu ứng
             clip = VideoClip(make_frame, duration=final_duration)
@@ -76,9 +118,9 @@ class VideoWorker(QThread):
             clip = create_clip(img_path, i, i * image_duration)
             clips.append(clip)
         
-        # Tạo video cuối cùng với nền trong suốt
-        final_bg = ColorClip(size=(total_width, screen_height), color=(0,0,0,0)).with_duration(final_duration)
-        final_clip = CompositeVideoClip([final_bg] + clips, size=(total_width, screen_height), bg_color=None)
+        # Tạo video cuối cùng
+        final_bg = ColorClip(size=(total_width, screen_height), color=(0,0,0)).with_duration(final_duration)  # Đổi màu nền thành trắng và bỏ alpha
+        final_clip = CompositeVideoClip([final_bg] + clips, size=(total_width, screen_height))  # Bỏ bg_color=None
         
         # Thêm nhạc nền nếu có
         if self.background_music:
