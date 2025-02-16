@@ -17,6 +17,8 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QLineEdit,
     QDialogButtonBox,
+    QPushButton,
+    QHBoxLayout,
 )
 from PySide6.QtGui import QPixmap, QPainter, QPen, QColor, QFontDatabase, QFont, QPainterPath
 from PySide6.QtCore import Qt, QPoint, QUrl, QRect, QSize
@@ -28,7 +30,15 @@ from VideoWorker import VideoWorker
 #     pyside6-uic form.ui -o ui_form.py, or
 #     pyside2-uic form.ui -o ui_form.py
 from main_form import Ui_Form
+from quality_dialog import VideoConfigDialog
+TOTAL_WIDTH = 1920  
+SCREEN_HEIGHT = 1080
+IMAGE_WIDTH = int(TOTAL_WIDTH / 4)
+IMAGE_HEIGHT = SCREEN_HEIGHT / 2
 
+BLUE_WIDTH = IMAGE_WIDTH
+BLUE_HEIGHT = 80
+IMAGE_HEIGHT = SCREEN_HEIGHT / 2 - BLUE_HEIGHT
 
 class CanvasWidget(QWidget):
     def __init__(self, parent=None):
@@ -45,7 +55,7 @@ class MediaPreviewDialog(QDialog):
     def __init__(self, media_path, text, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Xem trước media")
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(200, 600)
         layout = QVBoxLayout(self)
 
         # Hiển thị media
@@ -53,7 +63,7 @@ class MediaPreviewDialog(QDialog):
             label = QLabel()
             pixmap = QPixmap(media_path)
             pixmap = pixmap.scaled(
-                780, 500, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                IMAGE_WIDTH, SCREEN_HEIGHT, Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             label.setPixmap(pixmap)
             layout.addWidget(label)
@@ -129,14 +139,14 @@ class MediaItemWidget(QWidget):
             }
         """)
         # Giảm kích thước cố định của widget
-        self.setFixedSize(180, 180)  # Đảm bảo kích thước nhỏ hơn grid size
+        self.setFixedSize(170, 200)  # Đảm bảo kích thước nhỏ hơn grid size
 
 
 class CustomListWidget(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setViewMode(QListView.IconMode)
-        self.setSpacing(15)  # Khoảng cách giữa các items
+        self.setSpacing(10)  # Giảm khoảng cách giữa các items từ 15 xuống 10
         self.setResizeMode(QListView.Adjust)
         self.setWrapping(True)
         self.setMovement(QListView.Static)
@@ -144,50 +154,74 @@ class CustomListWidget(QListWidget):
         
         # Thêm các thuộc tính mới để fix lỗi đè item
         self.setUniformItemSizes(True)  # Đảm bảo các item có kích thước đồng nhất
-        self.setGridSize(QSize(200, 200))  # Đặt kích thước grid lớn hơn item size
+        self.setGridSize(QSize(200, 250))  # Đặt kích thước grid lớn hơn item size
         self.setFlow(QListView.LeftToRight)  # Sắp xếp từ trái sang phải
         self.setHorizontalScrollMode(QListView.ScrollPerPixel)
         self.setVerticalScrollMode(QListView.ScrollPerPixel)
+        
+        # Thêm style sheet để fix highlight bị lệch
+        self.setStyleSheet("""
+            QListWidget::item {
+                border: 1px solid transparent;
+                margin: 0px;
+                padding: 0px;
+            }
+            QListWidget::item:selected {
+                background-color: #e0e0e0;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+            }
+        """)
 
 
 class TextInputDialog(QDialog):
-    def __init__(self, image_path, parent=None):
+    def __init__(self, image_path, media_items, parent=None):
         super().__init__(parent)
+        self.media_items = media_items
         self.setWindowTitle("Nhập văn bản")
-        self.setMinimumSize(400, 500)
+        self.setMinimumSize(200, 700)
         layout = QVBoxLayout(self)
 
         # Hiển thị ảnh preview
         self.image_label = QLabel()
         
-        # Đọc và scale ảnh gốc thành 340x340 với chế độ cover
         original_pixmap = QPixmap(image_path)
         scaled_pixmap = original_pixmap.scaled(
-            340, 340, 
-            Qt.KeepAspectRatioByExpanding,
+            IMAGE_WIDTH, IMAGE_HEIGHT,  
+            Qt.KeepAspectRatioByExpanding,  # Sử dụng expanding để cover
             Qt.SmoothTransformation
         )
         
-        # Cắt ảnh để vừa khít với khung 340x340
-        if scaled_pixmap.width() > 340 or scaled_pixmap.height() > 340:
-            x = (scaled_pixmap.width() - 340) // 2 if scaled_pixmap.width() > 340 else 0
-            y = (scaled_pixmap.height() - 340) // 2 if scaled_pixmap.height() > 340 else 0
-            scaled_pixmap = scaled_pixmap.copy(x, y, 340, 340)
+        # Cắt ảnh để vừa khít với khung
+        if scaled_pixmap.width() > IMAGE_WIDTH or scaled_pixmap.height() > IMAGE_WIDTH:
+            x = (scaled_pixmap.width() - IMAGE_WIDTH) // 2
+            y = (scaled_pixmap.height() - IMAGE_WIDTH) // 2
+            scaled_pixmap = scaled_pixmap.copy(x, y, IMAGE_WIDTH, IMAGE_WIDTH)
         
-        # Tạo pixmap mới với kích thước 340x440 (thêm 100px cho phần nền xanh)
-        self.pixmap = QPixmap(340, 440)
-        self.pixmap.fill(Qt.white)  # Đặt nền trắng
+        # Tạo pixmap mới với kích thước chuẩn
+        self.pixmap = QPixmap(IMAGE_WIDTH, IMAGE_HEIGHT + BLUE_HEIGHT)
+        self.pixmap.fill(QColor("#F5F5F5"))
         
-        # Vẽ ảnh và nền xanh
         painter = QPainter(self.pixmap)
-        # Vẽ ảnh đã scale
-        painter.drawPixmap(
-            (340 - scaled_pixmap.width()) // 2, 
-            0, 
-            scaled_pixmap
-        )
-        # Vẽ nền xanh với chiều cao 100px
-        painter.fillRect(0, 340, 340, 100, QColor("#2196F3"))
+        
+        # Vẽ viền xung quanh vùng ảnh
+        painter.setPen(QPen(QColor("#CCCCCC"), 2))
+        painter.drawRect(0, 0, IMAGE_WIDTH, IMAGE_WIDTH)
+        
+        # Vẽ ảnh ở vị trí (0,0)
+        painter.drawPixmap(0, 0, scaled_pixmap)
+        
+        # Kiểm tra số lượng ảnh để chọn màu
+        if len(self.media_items) % 2 != 0:  # Nếu số lượng ảnh là chẵn
+            painter.fillRect(0, IMAGE_HEIGHT, IMAGE_WIDTH, BLUE_WIDTH, QColor("#80423D"))
+        else:  # Nếu số lượng ảnh là lẻ
+            painter.fillRect(0, IMAGE_HEIGHT, IMAGE_WIDTH, BLUE_WIDTH, QColor("#2196F3"))
+        
+        # Vẽ viền trắng bên trái và phải (sau khi vẽ ảnh và nền xanh)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor("#FFFFFF"))  # Màu trắng
+        painter.drawRect(0, 0, 2, IMAGE_HEIGHT + BLUE_HEIGHT)  # Viền trái
+        painter.drawRect(IMAGE_WIDTH - 2, 0, 2, IMAGE_HEIGHT + BLUE_HEIGHT)  # Viền phải
         painter.end()
         
         self.image_label.setPixmap(self.pixmap)
@@ -241,13 +275,15 @@ class TextInputDialog(QDialog):
         # Vẽ caption text với shadow và màu vàng
         caption_text = self.text_input.text()
         if caption_text:
-            # Tạo rect chỉ cho phần nền xanh
-            blue_rect = QRect(10, 340, 320, 100)  # Margin 10px từ mỗi bên
+            # Tạo rect cho phần nền xanh, căn giữa theo chiều ngang
+            x = (IMAGE_WIDTH - BLUE_WIDTH) // 2
+            y = IMAGE_HEIGHT
+            blue_rect = QRect(x, y, BLUE_WIDTH, BLUE_HEIGHT)
             painter.setFont(QFont(default_font, 28))
             
-            # Vẽ shadow với độ mờ cao hơn (alpha tăng từ 180 lên 240)
+            # Vẽ shadow trực tiếp từ blue_rect
             shadow_offset = 2
-            shadow_color = QColor(0, 0, 0, 255)  # Tăng alpha từ 180 lên 240
+            shadow_color = QColor(0, 0, 0, 255)
             painter.setPen(shadow_color)
             shadow_rect = blue_rect.translated(shadow_offset, shadow_offset)
             painter.drawText(shadow_rect, Qt.AlignCenter, caption_text)
@@ -267,8 +303,8 @@ class TextInputDialog(QDialog):
             container_height = 40  # Giảm chiều cao container cho phù hợp với font size nhỏ hơn
             
             # Đặt container ở dưới cùng của nền xanh
-            x = (340 - text_width) // 2  # Căn giữa container
-            y = 340 - container_height  # Cách bottom 10px
+            x = (IMAGE_WIDTH - text_width) // 2  # Căn giữa container
+            y = IMAGE_HEIGHT - container_height  # Cách bottom 10px
             
             # Vẽ container với viền đen và nền vàng
             path = QPainterPath()
@@ -308,6 +344,37 @@ class TextInputDialog(QDialog):
         return self.text_input.text(), self.year_input.text(), self.temp_image_path
 
 
+class VideoItemWidget(QWidget):
+    def __init__(self, video_name, parent=None):
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(5, 2, 5, 2)
+
+        # Label hiển thị tên video
+        self.video_label = QLabel(video_name)
+        layout.addWidget(self.video_label)
+
+        # Thêm nút xóa
+        self.delete_button = QPushButton("Xóa")
+        self.delete_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ff5252;
+                color: white;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 10pt;
+            }
+            QPushButton:hover {
+                background-color: #ff1744;
+            }
+            QPushButton:pressed {
+                background-color: #d50000;
+            }
+        """)
+        self.delete_button.setFixedWidth(60)
+        layout.addWidget(self.delete_button)
+
+
 class Widget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -330,17 +397,24 @@ class Widget(QWidget):
 
         # Khởi tạo danh sách media
         self.media_items = []
-        self.background_music = None  # Thêm biến để lưu đường dẫn nhạc nền
+        self.background_music = None
+
+        # Load tất cả video đã xuất từ thư mục exports
+        self.load_exported_videos()
 
         # Tự động thêm 2 file ảnh ban đầu
-        initial_images = [
-            ("3.png", "test1"),
-            ("4.png", "test2"),
-            ("4.png", "test2"),
-            ("4.png", "test2"),
-            ("5.jpg", "test2"),
-        ]
+        initial_images = []
         
+        # Tự động load tất cả file .png từ thư mục temp/images/
+        images_dir = "./temp/images"
+        if os.path.exists(images_dir):
+            for file_name in os.listdir(images_dir):
+                if file_name.lower().endswith('.png'):
+                    img_path = os.path.join(images_dir, file_name)
+                    # Lấy tên file làm text mặc định (bỏ phần .png)
+                    text = os.path.splitext(file_name)[0]
+                    initial_images.append((img_path, text))
+
         for img_path, text in initial_images:
             if os.path.exists(img_path):
                 # Tạo custom widget cho item
@@ -353,21 +427,66 @@ class Widget(QWidget):
 
         # Kết nối các signals
         self.ui.addButton.clicked.connect(self.add_media_item)
-        self.ui.createVideoButton.clicked.connect(self.create_video)
+        self.ui.createVideoButton.clicked.connect(self.show_video_config_dialog)
         self.ui.mediaList.itemClicked.connect(self.show_media_preview)
         self.ui.add_sound.clicked.connect(self.add_background_music)
 
+        # Thêm kết nối signal cho videoList
+        self.ui.videoList.itemClicked.connect(self.open_exported_video)
+
+        # Ẩn group box progress mặc định
+        self.ui.gro_progress.hide()
+
+    def load_exported_videos(self):
+        exports_dir = "./temp/exports"
+        # Tạo thư mục exports nếu chưa tồn tại
+        if not os.path.exists(exports_dir):
+            os.makedirs(exports_dir)
+        
+        # Xóa tất cả items hiện tại
+        self.ui.videoList.clear()
+        
+        # Lấy danh sách tất cả file .mp4 trong thư mục exports
+        for file_name in os.listdir(exports_dir):
+            if file_name.lower().endswith('.mp4'):
+                # Tạo item và widget tùy chỉnh
+                item = QListWidgetItem(self.ui.videoList)
+                widget = VideoItemWidget(file_name)
+                item.setSizeHint(widget.sizeHint())
+                self.ui.videoList.addItem(item)
+                self.ui.videoList.setItemWidget(item, widget)
+                
+                # Kết nối nút xóa với hàm xử lý
+                widget.delete_button.clicked.connect(
+                    lambda checked, fn=file_name: self.delete_video(fn)
+                )
+
+    def delete_video(self, video_name):
+        video_path = os.path.join("./temp/exports", video_name)
+        try:
+            # Xóa file video trực tiếp
+            os.remove(video_path)
+            # Cập nhật lại danh sách
+            self.load_exported_videos()
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Lỗi",
+                f"Không thể xóa video. Lỗi: {str(e)}"
+            )
+
     def add_media_item(self):
+        
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Chọn tập tin media",
             "",
             "Tập tin media (*.png *.jpg *.jpeg *.mp4 *.avi *.mov)",
         )
-
+    
         if file_path:
             if file_path.lower().endswith((".png", ".jpg", ".jpeg")):
-                dialog = TextInputDialog(file_path, self)
+                dialog = TextInputDialog(file_path, self.media_items, self)
                 if dialog.exec() == QDialog.Accepted:
                     text, year, edited_image_path = dialog.get_text()
                     display_text = f"{year}\n{text}" if year else text
@@ -399,13 +518,45 @@ class Widget(QWidget):
             dialog = MediaPreviewDialog(media_path, text, self)
             dialog.exec()
 
-    def create_video(self):
+    def show_video_config_dialog(self):
+        dialog = VideoConfigDialog(self)
+        if dialog.exec() == QDialog.Accepted:
+            video_config = dialog.get_video_config()  # Lấy cấu hình video
+            self.create_video(video_config)  # Truyền cấu hình vào hàm tạo video
+
+    def create_video(self, video_config):
         if not self.media_items:
             QMessageBox.warning(self, "Cảnh báo", "Vui lòng thêm một số mục media trước!")
             return
 
+        # Cập nhật kích thước video dựa trên cấu hình
+        IMAGE_WIDTH = int(video_config["width"] / 4)
+        SCREEN_HEIGHT = video_config["height"]
+        BLUE_WIDTH = IMAGE_WIDTH
+        BLUE_HEIGHT = 80
+        IMAGE_HEIGHT = SCREEN_HEIGHT / 2 - BLUE_HEIGHT
+
+        # Hiện group box progress
+        self.ui.gro_progress.show()
+        self.ui.progress_video.setValue(0)
+        self.ui.lbe_progress.setText("Đang xuất video...")
+
+        # Disable button và đổi style
+        self.ui.createVideoButton.setEnabled(False)
+        self.ui.createVideoButton.setStyleSheet("""
+            QPushButton {
+                background-color: #cccccc;
+                color: #666666;
+                border-radius: 8px;
+                font-size: 13pt;
+                font-weight: bold;
+                padding: 10px;
+                min-height: 35px;
+            }
+        """)
+
         # Tạo thư mục exports nếu chưa tồn tại
-        exports_dir = "exports"
+        exports_dir = "./temp/exports"
         if not os.path.exists(exports_dir):
             os.makedirs(exports_dir)
 
@@ -417,8 +568,13 @@ class Widget(QWidget):
         progress_item = QListWidgetItem("Đang xử lý...")
         self.ui.videoList.addItem(progress_item)
 
-        # Tạo và chạy worker
-        self.video_worker = VideoWorker(self.media_items, save_path, self.background_music)
+        # Tạo và chạy worker với cấu hình video
+        self.video_worker = VideoWorker(
+            self.media_items, 
+            save_path, 
+            self.background_music,
+            video_config  # Truyền cấu hình video vào worker
+        )
         self.video_worker.progress.connect(lambda msg: self.update_progress(msg, progress_item))
         self.video_worker.finished.connect(
             lambda success, msg: self.on_video_finished(success, msg, progress_item)
@@ -427,15 +583,59 @@ class Widget(QWidget):
 
     def update_progress(self, message, item):
         item.setText(message)
+        # Thêm xử lý để cập nhật progress bar
+        if "%" in message:
+            try:
+                percentage = float(message.split("%")[0].split(": ")[1])
+                self.ui.progress_video.setValue(int(percentage))
+                self.ui.lbe_progress.setText(f"Đang xuất video... {percentage:.1f}%")
+            except:
+                pass
 
     def on_video_finished(self, success, message, progress_item):
         if success:
-            # Thay thế item tiến trình bằng tên file video
-            progress_item.setText(os.path.basename(self.video_worker.save_path))
+            # Xóa item tiến trình cũ
+            self.ui.videoList.takeItem(self.ui.videoList.row(progress_item))
+            
+            # Tạo item mới với widget tùy chỉnh có nút xóa
+            video_name = os.path.basename(self.video_worker.save_path)
+            item = QListWidgetItem(self.ui.videoList)
+            widget = VideoItemWidget(video_name)
+            item.setSizeHint(widget.sizeHint())
+            self.ui.videoList.addItem(item)
+            self.ui.videoList.setItemWidget(item, widget)
+            
+            # Kết nối nút xóa với hàm xử lý
+            widget.delete_button.clicked.connect(
+                lambda checked, fn=video_name: self.delete_video(fn)
+            )
         else:
             # Xóa item tiến trình nếu có lỗi
             self.ui.videoList.takeItem(self.ui.videoList.row(progress_item))
             QMessageBox.critical(self, "Lỗi", message)
+        
+        # Ẩn group box progress khi hoàn thành
+        self.ui.gro_progress.hide()
+        
+        # Enable lại button và khôi phục style
+        self.ui.createVideoButton.setEnabled(True)
+        self.ui.createVideoButton.setStyleSheet("""
+            QPushButton {
+                background-color: #2196f3;
+                color: white;
+                border-radius: 8px;
+                font-size: 13pt;
+                font-weight: bold;
+                padding: 10px;
+                min-height: 35px;
+            }
+            QPushButton:hover {
+                background-color: #1976d2;
+            }
+            QPushButton:pressed {
+                background-color: #0d47a1;
+            }
+        """)
 
     def add_background_music(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -446,6 +646,28 @@ class Widget(QWidget):
             self.background_music = file_path
             file_name = os.path.basename(file_path)
             self.ui.sound_status.setText(f"Nhạc nền: {file_name}")
+
+    def open_exported_video(self, item):
+        # Lấy widget tùy chỉnh từ item
+        widget = self.ui.videoList.itemWidget(item)
+        if widget:
+            video_name = widget.video_label.text()
+            video_path = os.path.join("./temp/exports", video_name)
+            
+            if os.path.exists(video_path):
+                # Mở video bằng ứng dụng mặc định của hệ thống
+                if sys.platform.startswith('darwin'):  # macOS
+                    os.system(f'open "{video_path}"')
+                elif sys.platform.startswith('win32'):  # Windows
+                    os.system(f'start "" "{video_path}"')
+                else:  # Linux
+                    os.system(f'xdg-open "{video_path}"')
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Lỗi",
+                    "Không tìm thấy file video. File có thể đã bị xóa hoặc di chuyển."
+                )
 
 
 if __name__ == "__main__":

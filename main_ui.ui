@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>768</height>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -220,11 +220,37 @@ QPushButton:pressed {
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="gro_progress">
+     <property name="title">
+      <string>Trạng thái</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
+       <widget class="QLabel" name="lbe_progress">
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Đang xuất video..&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progress_video">
+        <property name="value">
+         <number>50</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="createVideoButton">
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>65</height>
+       <height>55</height>
       </size>
      </property>
      <property name="styleSheet">
@@ -235,7 +261,7 @@ QPushButton:pressed {
         font-size: 13pt;
         font-weight: bold;
         padding: 10px;
-        min-height: 45px;
+        min-height: 35px;
       }
       QPushButton:hover {
         background-color: #1976d2;

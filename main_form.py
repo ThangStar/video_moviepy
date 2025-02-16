@@ -15,15 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QListWidget,
-    QListWidgetItem, QPushButton, QSizePolicy, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QLabel,
+    QListWidget, QListWidgetItem, QProgressBar, QPushButton,
+    QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(1024, 768)
+        Form.resize(1024, 668)
         self.verticalLayout_3 = QVBoxLayout(Form)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.widget_3 = QWidget(Form)
@@ -143,9 +143,28 @@ class Ui_Form(object):
 
         self.verticalLayout_3.addWidget(self.widget)
 
+        self.gro_progress = QGroupBox(Form)
+        self.gro_progress.setObjectName(u"gro_progress")
+        self.verticalLayout_5 = QVBoxLayout(self.gro_progress)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.lbe_progress = QLabel(self.gro_progress)
+        self.lbe_progress.setObjectName(u"lbe_progress")
+        self.lbe_progress.setStyleSheet(u"")
+
+        self.verticalLayout_5.addWidget(self.lbe_progress)
+
+        self.progress_video = QProgressBar(self.gro_progress)
+        self.progress_video.setObjectName(u"progress_video")
+        self.progress_video.setValue(50)
+
+        self.verticalLayout_5.addWidget(self.progress_video)
+
+
+        self.verticalLayout_3.addWidget(self.gro_progress)
+
         self.createVideoButton = QPushButton(Form)
         self.createVideoButton.setObjectName(u"createVideoButton")
-        self.createVideoButton.setMinimumSize(QSize(0, 65))
+        self.createVideoButton.setMinimumSize(QSize(0, 55))
         self.createVideoButton.setStyleSheet(u"QPushButton {\n"
 "        background-color: #2196f3;\n"
 "        color: white;\n"
@@ -153,7 +172,7 @@ class Ui_Form(object):
 "        font-size: 13pt;\n"
 "        font-weight: bold;\n"
 "        padding: 10px;\n"
-"        min-height: 45px;\n"
+"        min-height: 35px;\n"
 "      }\n"
 "      QPushButton:hover {\n"
 "        background-color: #1976d2;\n"
@@ -178,6 +197,8 @@ class Ui_Form(object):
         self.sound_status.setText(QCoreApplication.translate("Form", u"Nh\u1ea1c n\u1ec1n: Ch\u01b0a c\u00f3", None))
         self.label.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-size:10pt; font-weight:400;\">T\u00e0i nguy\u00ean</span></p></body></html>", None))
         self.label_2.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-size:10pt;\">Video \u0111\u00e3 xu\u1ea5t</span></p></body></html>", None))
+        self.gro_progress.setTitle(QCoreApplication.translate("Form", u"Tr\u1ea1ng th\u00e1i", None))
+        self.lbe_progress.setText(QCoreApplication.translate("Form", u"<html><head/><body><p>\u0110ang xu\u1ea5t video..</p></body></html>", None))
         self.createVideoButton.setText(QCoreApplication.translate("Form", u"T\u1ea0O VIDEO", None))
     # retranslateUi
 

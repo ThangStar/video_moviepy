@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>250</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Cấu hình Video</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    font-size: 11pt;
+}
+QComboBox {
+    padding: 5px;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+    background-color: white;
+    min-height: 25px;
+    font-size: 10pt;
+}
+QComboBox:hover {
+    border: 1px solid #2196F3;
+}
+QComboBox::drop-down {
+    border: none;
+    padding-right: 10px;
+}
+QComboBox::down-arrow {
+    image: url(:/icons/down_arrow.png);
+    width: 12px;
+    height: 12px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Lựa chọn cấu hình Video</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QFormLayout" name="formLayout">
+      <property name="labelAlignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Chất lượng video:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="qualityComboBox">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>37</height>
+         </size>
+        </property>
+        <property name="currentIndex">
+         <number>6</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>144p - Chất lượng thấp nhất</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>480p - Chất lượng thường</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>720p HD - Chất lượng cao</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1080p Full HD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1440p QHD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2K</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4K Ultra HD</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelButton">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    background-color: #f44336;
+    color: white;
+    border-radius: 4px;
+    padding: 8px 15px;
+    font-size: 11pt;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #d32f2f;
+}
+QPushButton:pressed {
+    background-color: #b71c1c;
+}</string>
+        </property>
+        <property name="text">
+         <string>Hủy bỏ</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="confirmButton">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    padding: 8px 15px;
+    font-size: 11pt;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #388E3C;
+}
+QPushButton:pressed {
+    background-color: #1B5E20;
+}</string>
+        </property>
+        <property name="text">
+         <string>Xác nhận</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
