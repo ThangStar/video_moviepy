@@ -24,4 +24,13 @@ class VideoConfigDialog(QDialog, Ui_Dialog):
         }
         
         # Lấy cấu hình tương ứng với chất lượng được chọn
-        return config.get(quality.split()[0], config["720p"])  # Mặc định 720p nếu không tìm thấy
+        width = config.get(quality.split()[0], config["720p"])["width"]
+        height = config.get(quality.split()[0], config["720p"])["height"]
+        return {
+            "fps": 30,
+            "bitrate": "2000k",
+            "crf": 23,
+            "width": width,
+            "height": height,
+            "threads": self.threadsSpinBox.value()
+        }

@@ -4,15 +4,18 @@ from PySide6.QtCore import QThread, Signal
 from moviepy import ImageClip, AudioFileClip, CompositeVideoClip, VideoClip, ColorClip
 from proglog import ProgressBarLogger
 from PIL import Image
+import numpy as np
+from moviepy.audio.AudioClip import concatenate_audioclips
 # CONFIG VIDEO
 TOTAL_WIDTH = 1920  
 SCREEN_HEIGHT = 1080
-IMAGE_WIDTH = int(TOTAL_WIDTH / 4)
+IMAGE_WIDTH = int(TOTAL_WIDTH / 4) 
 IMAGE_HEIGHT = SCREEN_HEIGHT / 2
 
 class VideoWorker(QThread):
     progress = Signal(str)
     finished = Signal(bool, str)
+    msg = Signal(str)
 
     def __init__(self, media_items, save_path, background_music=None, video_config=None):
         super().__init__()
@@ -26,11 +29,12 @@ class VideoWorker(QThread):
             "bitrate": "2000k",
             "crf": 23,
             "width": 1280,
-            "height": 720
+            "height": 720,
+            "threads": 16
         }
         self.TOTAL_WIDTH = self.video_config["width"]
         self.SCREEN_HEIGHT = self.video_config["height"]
-        self.IMAGE_WIDTH = int(self.TOTAL_WIDTH / 4)
+        self.IMAGE_WIDTH = int(self.TOTAL_WIDTH / 4) 
         self.IMAGE_HEIGHT = self.SCREEN_HEIGHT / 2
         
     def transform_image(self):
@@ -116,8 +120,27 @@ class VideoWorker(QThread):
         # Tính toán lại thời lượng video dựa trên thời điểm hình thứ 5 về vị trí target_x
         distance_to_move = (4 * self.IMAGE_WIDTH + self.IMAGE_WIDTH) - target_x  # Khoảng cách từ vị trí bắt đầu đến target_x
         movement_time = (distance_to_move / self.IMAGE_WIDTH) * image_duration
-        extra_duration_for_fifth_image = 20  # Thêm 2 giây cho hình số 5
-        final_duration = (5 * image_duration) + movement_time + extra_duration_for_fifth_image
+        
+        # Tính toán thời gian dựa vào chiều dài ảnh cuối
+        if len(self.media_items) > 4:
+            last_image = ImageClip(self.media_items[-1][0])
+            last_image_width = last_image.size[0]
+            self.msg.emit(f"last_image_width: {last_image_width}")
+            
+            # Tính toán tổng khoảng cách cần di chuyển
+            total_distance = last_image_width + self.TOTAL_WIDTH
+            move_speed = 15  # pixels/giây
+            
+            # Tính thời gian di chuyển dựa trên tổng khoảng cách
+            extra_duration_for_fifth_image = total_distance / move_speed
+            
+            # Đảm bảo thời gian tối thiểu là 5 giây
+            extra_duration_for_fifth_image = max(extra_duration_for_fifth_image, 5)
+        else:
+            extra_duration_for_fifth_image = 0
+
+        final_duration = 15 + extra_duration_for_fifth_image - 1
+        self.msg.emit(f"final_duration: {final_duration}")
         
         def create_clip(img_path, index, start_time):
             # Tạo animation cho hình ảnh với nền trong suốt
@@ -135,8 +158,8 @@ class VideoWorker(QThread):
                 # Tính góc xoay (chỉ cho 4 ảnh đầu tiên)
                 local_t = t - start_time
                 if index < 4:  # Chỉ xoay 4 ảnh đầu
-                    if local_t < 3:  # Giảm xuống 3 giây
-                        progress = local_t / 3
+                    if local_t < 5:  # Giảm xuống 3 giây
+                        progress = local_t / 5
                         # Thêm easing để xoay mượt mà hơn
                         eased_progress = 1 - (1 - progress) * (1 - progress)  # easeOutQuad
                         angle = 45 * (1 - eased_progress)
@@ -158,54 +181,37 @@ class VideoWorker(QThread):
                 local_t = t - start_time
                 if t < start_time:
                     return (self.TOTAL_WIDTH, 0)
-                elif local_t < 3 and not self.is_last_image:  # Giảm xuống 3 giây
-                    if index == 4:  # Nếu là hình số 5
+                elif local_t < 5.1 and not self.is_last_image:
+                    if index >= 4 and self.is_last_image == False:
                         self.is_last_image = True
-                        return (4 * self.IMAGE_WIDTH + self.IMAGE_WIDTH, 0)  # Đặt trực tiếp ngay sau hình số 4
+                        return (4 * self.IMAGE_WIDTH + self.IMAGE_WIDTH, 0)
                     elif index < 4:
                         final_x = index * self.IMAGE_WIDTH
-                        # Sử dụng hàm easeOutQuad để tạo chuyển động mượt
-                        progress = local_t / 3  # Thời gian 3s
-                        eased_progress = 1 - (1 - progress) * (1 - progress)  # Hàm easeOutQuad
+                        progress = local_t / 5
+                        eased_progress = 1 - (1 - progress) * (1 - progress)
                         current_x = self.TOTAL_WIDTH - (self.TOTAL_WIDTH - final_x) * eased_progress
                         return (current_x, 0)
                 else:
                     current_time = t
-                    current_index = int(current_time // image_duration)
                     
-                    if current_index < 5:  # 4 hình đầu giữ nguyên vị trí
-                        return (index * self.IMAGE_WIDTH, 0)
+                    # Đảm bảo vị trí x không vượt quá giới hạn màn hình
+                    if index < 4:
+                        initial_x = index * self.IMAGE_WIDTH
                     else:
-                        # Vị trí ban đầu: ngay sau hình 4
-                        start_x = 4 * self.IMAGE_WIDTH + self.IMAGE_WIDTH
-                        # Khoảng cách giữa các hình
-                        offset = (index - 5) * self.IMAGE_WIDTH
-                        initial_x = start_x + offset
-                        
-                        # Thời gian từ khi hình thứ 5 xuất hiện
-                        time_since_fifth = current_time - (5 * image_duration)
-                            # Di chuyển sang trái với linear để chuyển động đều
-                        max_time = movement_time
-                        move_progress = min(time_since_fifth / max_time, 1)
-                        new_x = None
-                        if index >= 4:  # Đối với hình thứ 5 và các hình sau
-                            # Sử dụng cùng công thức tính khoảng cách di chuyển
-                            move_distance = move_progress * (distance_to_move+self.TOTAL_WIDTH)
-                            new_x = initial_x - move_distance
-                        else:
-                            # Các hình 1-4 cũng sử dụng cùng công thức
-                            move_distance = move_progress * (distance_to_move)
-                            new_x = initial_x - move_distance
-                        
-                        # Chỉ kiểm tra điều kiện ra khỏi màn hình cho các hình từ số 6 trở đi
-                        # if index > 4 and new_x + image_width < 0:
-                        #     return (TOTAL_WIDTH * 4, 0)  # Di chuyển hình ra xa khỏi khung hình
-                        
-                        # Bỏ kiểm tra x < 1 cho hình số 5
-                        if index < 4 and new_x < 1:
-                            new_x = 0
-                        return (new_x, 0)
-                       
+                        initial_x = 4 * self.IMAGE_WIDTH + (index - 4) * self.IMAGE_WIDTH
+                    
+                    time_since_movement = current_time - (5 * image_duration)
+                    if time_since_movement > 0:
+                        move_speed = 15
+                        move_distance = time_since_movement * move_speed
+                        new_x = initial_x - move_distance
+                        # Bỏ giới hạn vị trí tối thiểu để hình cuối có thể di chuyển hết màn hình
+                        if index < 4:
+                            new_x = max(new_x, -self.IMAGE_WIDTH)  # Giới hạn chỉ cho 4 hình đầu
+                    else:
+                        new_x = initial_x
+                    
+                    return (int(new_x), 0)
         
             # Tạo clip với hiệu ứng
             clip = VideoClip(make_frame, duration=final_duration)
@@ -217,7 +223,6 @@ class VideoWorker(QThread):
         for i, (img_path, _) in enumerate(self.media_items):
             clip = create_clip(img_path, i, i * image_duration)
             clips.append(clip)
-        
         # Tạo video cuối cùng
         # final_bg = ColorClip(size=(self.TOTAL_WIDTH, self.SCREEN_HEIGHT), color=(0,0,0)).with_duration(final_duration)  # Đổi màu nền thành trắng và bỏ alpha
         final_clip = CompositeVideoClip(clips, size=(self.TOTAL_WIDTH, self.SCREEN_HEIGHT))  # Bỏ bg_color=None
@@ -226,11 +231,15 @@ class VideoWorker(QThread):
         if self.background_music:
             self.progress.emit("Đang thêm nhạc nền...")
             audio = AudioFileClip(self.background_music)
-            if audio.duration < final_clip.duration:
-                audio = audio.loop(duration=final_clip.duration)
-            else:
-                audio = audio.subclipped(0, final_clip.duration)
-            final_clip = final_clip.with_audio(audio)
+            
+            # Tính toán số lần lặp cần thiết
+            num_loops = int(np.ceil(final_clip.duration / audio.duration))
+            # Tạo audio mới bằng cách nối nhiều bản sao
+            concatenated_audio = concatenate_audioclips([audio] * num_loops)
+            # Cắt đúng độ dài cần thiết
+            final_audio = concatenated_audio.subclipped(0, final_clip.duration)
+            
+            final_clip = final_clip.with_audio(final_audio)
         
         class MyBarLogger(ProgressBarLogger):
             def __init__(self, worker):
@@ -252,7 +261,7 @@ class VideoWorker(QThread):
             codec="libx264",
             audio_codec="aac",
             preset="ultrafast",
-            threads=16,
+            threads=self.video_config["threads"],
             bitrate=self.video_config["bitrate"],
             ffmpeg_params=[
                 "-pix_fmt", "yuv420p",

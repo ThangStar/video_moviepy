@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>536</width>
     <height>668</height>
    </rect>
   </property>
@@ -49,22 +49,99 @@
            <property name="font">
             <font>
              <pointsize>11</pointsize>
+             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
            <property name="styleSheet">
-            <string notr="true">QPushButton {
+            <string notr="true">QPushButton#addButton {
     background-color: #4CAF50;
     color: white;
     border-radius: 6px;
     padding: 8px 15px;
     font-size: 11pt;
 }
-QPushButton:hover {
-    background-color: #45a049;
+QPushButton#addButton:hover {
+    background-color: #43a047;
 }
-QPushButton:pressed {
-    background-color: #3d8b40;
+QPushButton#addButton:pressed {
+    background-color: #388e3c;
+}
+QPushButton#add_sound {
+    background-color: #2196F3;
+    color: white;
+    border-radius: 6px;
+    padding: 8px 15px;
+    font-size: 11pt;
+}
+QPushButton#add_sound:hover {
+    background-color: #1e88e5;
+}
+QPushButton#add_sound:pressed {
+    background-color: #1976d2;
+}
+QGroupBox {
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    background-color: white;
+    margin-top: 6px;
+}
+QGroupBox::title {
+    color: #424242;
+    padding: 0 8px;
+}
+
+QLabel {
+    color: #424242;
+}
+
+QProgressBar {
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    text-align: center;
+    background-color: #f8f8f8;
+}
+QProgressBar::chunk {
+    background-color: #2196F3;
+    border-radius: 3px;
+}
+
+QPushButton#createVideoButton {
+    background-color: #2196f3;
+    color: white;
+    border-radius: 6px;
+    font-size: 11pt;
+    font-weight: bold;
+    padding: 8px 15px;
+    min-height: 30px;
+    margin-bottom: 10px;
+}
+QPushButton#createVideoButton:hover {
+    background-color: #1e88e5;
+}
+QPushButton#createVideoButton:pressed {
+    background-color: #1976d2;
+}
+
+QDoubleSpinBox {
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    padding: 4px;
+    background: white;
+}
+QDoubleSpinBox:hover {
+    border-color: #2196F3;
+}
+QDoubleSpinBox:focus {
+    border-color: #2196F3;
+}
+
+QLabel#footer_label {
+    color: #757575;
+    font-size: 9pt;
+    padding: 5px;
+    margin-bottom: 5px;
+    background-color: transparent;
 }</string>
            </property>
            <property name="text">
@@ -83,22 +160,23 @@ QPushButton:pressed {
            <property name="font">
             <font>
              <pointsize>11</pointsize>
+             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
            <property name="styleSheet">
-            <string notr="true">QPushButton {
+            <string notr="true">QPushButton#add_sound {
     background-color: #2196F3;
     color: white;
     border-radius: 6px;
     padding: 8px 15px;
     font-size: 11pt;
 }
-QPushButton:hover {
-    background-color: #1976D2;
+QPushButton#add_sound:hover {
+    background-color: #1e88e5;
 }
-QPushButton:pressed {
-    background-color: #1565C0;
+QPushButton#add_sound:pressed {
+    background-color: #1976d2;
 }</string>
            </property>
            <property name="text">
@@ -120,6 +198,82 @@ QPushButton:pressed {
         <property name="text">
          <string>Nhạc nền: Chưa có</string>
         </property>
+        <property name="margin">
+         <number>5</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="config_group">
+        <property name="title">
+         <string>Cấu hình</string>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+        <layout class="QVBoxLayout" name="config_layout">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="leftMargin">
+          <number>15</number>
+         </property>
+         <property name="topMargin">
+          <number>15</number>
+         </property>
+         <property name="rightMargin">
+          <number>15</number>
+         </property>
+         <property name="bottomMargin">
+          <number>15</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="speed_layout">
+           <item>
+            <widget class="QLabel" name="speed_label">
+             <property name="text">
+              <string>Tốc độ video (x):</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="speed_input">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="minimum">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="value">
+              <double>1.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="speed_spacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -147,7 +301,7 @@ QPushButton:pressed {
        <widget class="QWidget" name="widget1" native="true">
         <property name="minimumSize">
          <size>
-          <width>300</width>
+          <width>0</width>
           <height>0</height>
          </size>
         </property>
@@ -169,6 +323,7 @@ QPushButton:pressed {
            <property name="font">
             <font>
              <pointsize>14</pointsize>
+             <weight>75</weight>
              <bold>true</bold>
              <underline>false</underline>
              <kerning>true</kerning>
@@ -183,7 +338,41 @@ QPushButton:pressed {
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="mediaList"/>
+          <widget class="QListWidget" name="mediaList">
+           <property name="styleSheet">
+            <string notr="true">QListWidget {
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    background: white;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #f8f8f8;
+    width: 8px;
+    margin: 0px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background: #dadada;
+    min-height: 30px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #c8c8c8;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -211,7 +400,41 @@ QPushButton:pressed {
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="videoList"/>
+          <widget class="QListWidget" name="videoList">
+           <property name="styleSheet">
+            <string notr="true">QListWidget {
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    background: white;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #f8f8f8;
+    width: 8px;
+    margin: 0px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background: #dadada;
+    min-height: 30px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #c8c8c8;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -250,29 +473,67 @@ QPushButton:pressed {
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>55</height>
+       <height>46</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton {
+      <string notr="true">QPushButton#createVideoButton {
         background-color: #2196f3;
         color: white;
-        border-radius: 8px;
-        font-size: 13pt;
+        border-radius: 6px;
+        font-size: 11pt;
         font-weight: bold;
-        padding: 10px;
-        min-height: 35px;
+        padding: 8px 15px;
+        min-height: 30px;
       }
-      QPushButton:hover {
+      QPushButton#createVideoButton:hover {
+        background-color: #1e88e5;
+      }
+      QPushButton#createVideoButton:pressed {
         background-color: #1976d2;
-        transition: background-color 0.3s;
-      }
-      QPushButton:pressed {
-        background-color: #0d47a1;
       }</string>
      </property>
      <property name="text">
-      <string>TẠO VIDEO</string>
+      <string>  TẠO VIDEO</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/video-camera.png</normaloff>icons/video-camera.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="footer_label">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>@TSTool | version: 1.0.1</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>

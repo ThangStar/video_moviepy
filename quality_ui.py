@@ -17,13 +17,13 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFormLayout,
     QHBoxLayout, QLabel, QPushButton, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(400, 250)
+        Dialog.resize(468, 248)
         Dialog.setStyleSheet(u"\n"
 "QLabel {\n"
 "    font-size: 11pt;\n"
@@ -47,7 +47,18 @@ class Ui_Dialog(object):
 "    image: url(:/icons/down_arrow.png);\n"
 "    width: 12px;\n"
 "    height: 12px;\n"
-"}")
+"}\n"
+"QSpinBox {\n"
+"    padding: 5px;\n"
+"    border: 1px solid #bdbdbd;\n"
+"    border-radius: 4px;\n"
+"    background-color: white;\n"
+"    font-size: 10pt;\n"
+"}\n"
+"QSpinBox:hover {\n"
+"    border: 1px solid #2196F3;\n"
+"}\n"
+"         ")
         self.verticalLayout = QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label = QLabel(Dialog)
@@ -81,6 +92,34 @@ class Ui_Dialog(object):
         self.qualityComboBox.setMinimumSize(QSize(200, 37))
 
         self.formLayout.setWidget(0, QFormLayout.FieldRole, self.qualityComboBox)
+
+        self.label_3 = QLabel(self.widget)
+        self.label_3.setObjectName(u"label_3")
+
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_3)
+
+        self.threadsSpinBox = QSpinBox(self.widget)
+        self.threadsSpinBox.setObjectName(u"threadsSpinBox")
+        self.threadsSpinBox.setMinimumSize(QSize(200, 37))
+        self.threadsSpinBox.setMinimum(1)
+        self.threadsSpinBox.setMaximum(32)
+        self.threadsSpinBox.setValue(16)
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.threadsSpinBox)
+
+        self.warningLabel = QLabel(self.widget)
+        self.warningLabel.setObjectName(u"warningLabel")
+        self.warningLabel.setStyleSheet(u"\n"
+"QLabel {\n"
+"    color: #FF5722;\n"
+"    padding: 10px;\n"
+"    font-size: 10pt;\n"
+"}\n"
+"         ")
+        self.warningLabel.setAlignment(Qt.AlignCenter)
+        self.warningLabel.setWordWrap(True)
+
+        self.formLayout.setWidget(2, QFormLayout.SpanningRole, self.warningLabel)
 
 
         self.verticalLayout.addWidget(self.widget)
@@ -161,6 +200,8 @@ class Ui_Dialog(object):
         self.qualityComboBox.setItemText(5, QCoreApplication.translate("Dialog", u"2K", None))
         self.qualityComboBox.setItemText(6, QCoreApplication.translate("Dialog", u"4K Ultra HD", None))
 
+        self.label_3.setText(QCoreApplication.translate("Dialog", u"S\u1ed1 lu\u1ed3ng x\u1eed l\u00fd:", None))
+        self.warningLabel.setText(QCoreApplication.translate("Dialog", u"<html><head/><body><p>\u26a0\ufe0f C\u1ea3nh b\u00e1o: S\u1ed1 lu\u1ed3ng qu\u00e1 cao c\u00f3 th\u1ec3 khi\u1ebfn \u1ee9ng d\u1ee5ng c\u1ee7a b\u1ea1n b\u1ecb treo</p></body></html>", None))
         self.cancelButton.setText(QCoreApplication.translate("Dialog", u"H\u1ee7y b\u1ecf", None))
         self.confirmButton.setText(QCoreApplication.translate("Dialog", u"X\u00e1c nh\u1eadn", None))
     # retranslateUi

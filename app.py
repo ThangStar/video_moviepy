@@ -31,6 +31,7 @@ from VideoWorker import VideoWorker
 #     pyside2-uic form.ui -o ui_form.py
 from main_form import Ui_Form
 from quality_dialog import VideoConfigDialog
+from src.ui.text_input_dialog import TextInputDialog
 TOTAL_WIDTH = 1920  
 SCREEN_HEIGHT = 1080
 IMAGE_WIDTH = int(TOTAL_WIDTH / 4)
@@ -174,175 +175,6 @@ class CustomListWidget(QListWidget):
         """)
 
 
-class TextInputDialog(QDialog):
-    def __init__(self, image_path, media_items, parent=None):
-        super().__init__(parent)
-        self.media_items = media_items
-        self.setWindowTitle("Nhập văn bản")
-        self.setMinimumSize(200, 700)
-        layout = QVBoxLayout(self)
-
-        # Hiển thị ảnh preview
-        self.image_label = QLabel()
-        
-        original_pixmap = QPixmap(image_path)
-        scaled_pixmap = original_pixmap.scaled(
-            IMAGE_WIDTH, IMAGE_HEIGHT,  
-            Qt.KeepAspectRatioByExpanding,  # Sử dụng expanding để cover
-            Qt.SmoothTransformation
-        )
-        
-        # Cắt ảnh để vừa khít với khung
-        if scaled_pixmap.width() > IMAGE_WIDTH or scaled_pixmap.height() > IMAGE_WIDTH:
-            x = (scaled_pixmap.width() - IMAGE_WIDTH) // 2
-            y = (scaled_pixmap.height() - IMAGE_WIDTH) // 2
-            scaled_pixmap = scaled_pixmap.copy(x, y, IMAGE_WIDTH, IMAGE_WIDTH)
-        
-        # Tạo pixmap mới với kích thước chuẩn
-        self.pixmap = QPixmap(IMAGE_WIDTH, IMAGE_HEIGHT + BLUE_HEIGHT)
-        self.pixmap.fill(QColor("#F5F5F5"))
-        
-        painter = QPainter(self.pixmap)
-        
-        # Vẽ viền xung quanh vùng ảnh
-        painter.setPen(QPen(QColor("#CCCCCC"), 2))
-        painter.drawRect(0, 0, IMAGE_WIDTH, IMAGE_WIDTH)
-        
-        # Vẽ ảnh ở vị trí (0,0)
-        painter.drawPixmap(0, 0, scaled_pixmap)
-        
-        # Kiểm tra số lượng ảnh để chọn màu
-        if len(self.media_items) % 2 != 0:  # Nếu số lượng ảnh là chẵn
-            painter.fillRect(0, IMAGE_HEIGHT, IMAGE_WIDTH, BLUE_WIDTH, QColor("#80423D"))
-        else:  # Nếu số lượng ảnh là lẻ
-            painter.fillRect(0, IMAGE_HEIGHT, IMAGE_WIDTH, BLUE_WIDTH, QColor("#2196F3"))
-        
-        # Vẽ viền trắng bên trái và phải (sau khi vẽ ảnh và nền xanh)
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor("#FFFFFF"))  # Màu trắng
-        painter.drawRect(0, 0, 2, IMAGE_HEIGHT + BLUE_HEIGHT)  # Viền trái
-        painter.drawRect(IMAGE_WIDTH - 2, 0, 2, IMAGE_HEIGHT + BLUE_HEIGHT)  # Viền phải
-        painter.end()
-        
-        self.image_label.setPixmap(self.pixmap)
-        layout.addWidget(self.image_label)
-
-        # Thêm label và input cho năm sinh
-        year_layout = QVBoxLayout()
-        year_label = QLabel("Năm sinh:")
-        year_label.setStyleSheet("font-weight: bold;")
-        year_layout.addWidget(year_label)
-        
-        self.year_input = QLineEdit()
-        self.year_input.setPlaceholderText("Nhập năm sinh...")
-        self.year_input.textChanged.connect(self.update_preview)
-        year_layout.addWidget(self.year_input)
-        layout.addLayout(year_layout)
-
-        # Thêm label và input cho tên
-        text_layout = QVBoxLayout()
-        text_label = QLabel("Tên:")
-        text_label.setStyleSheet("font-weight: bold;")
-        text_layout.addWidget(text_label)
-        
-        self.text_input = QLineEdit()
-        self.text_input.setPlaceholderText("Nhập văn bản cho ảnh...")
-        self.text_input.textChanged.connect(self.update_preview)
-        text_layout.addWidget(self.text_input)
-        layout.addLayout(text_layout)
-
-        # Buttons
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
-        layout.addWidget(button_box)
-
-        self.temp_image_path = None  # Thêm biến để lưu đường dẫn ảnh tạm
-
-    def update_preview(self, text=None):
-        # Tạo bản sao của pixmap gốc
-        temp_pixmap = self.pixmap.copy()
-        painter = QPainter(temp_pixmap)
-        painter.setRenderHint(QPainter.Antialiasing)
-        
-        # Tạo và cài đặt font tùy chỉnh
-        font_id = QFontDatabase.addApplicationFont("./temp/fonts/Fontspring-DEMO-multipa-bold.otf")
-        font_families = QFontDatabase.applicationFontFamilies(font_id) if font_id != -1 else ["Arial"]
-        default_font = font_families[0] if font_families else "Arial"
-
-        # Vẽ caption text với shadow và màu vàng
-        caption_text = self.text_input.text()
-        if caption_text:
-            # Tạo rect cho phần nền xanh, căn giữa theo chiều ngang
-            x = (IMAGE_WIDTH - BLUE_WIDTH) // 2
-            y = IMAGE_HEIGHT
-            blue_rect = QRect(x, y, BLUE_WIDTH, BLUE_HEIGHT)
-            painter.setFont(QFont(default_font, 28))
-            
-            # Vẽ shadow trực tiếp từ blue_rect
-            shadow_offset = 2
-            shadow_color = QColor(0, 0, 0, 255)
-            painter.setPen(shadow_color)
-            shadow_rect = blue_rect.translated(shadow_offset, shadow_offset)
-            painter.drawText(shadow_rect, Qt.AlignCenter, caption_text)
-            
-            # Vẽ text chính màu vàng
-            painter.setPen(QColor("#FCE106"))
-            painter.drawText(blue_rect, Qt.AlignCenter, caption_text)
-
-        # Vẽ năm sinh
-        year_text = self.year_input.text()
-        if year_text:
-            # Sử dụng font size 18 cho năm sinh
-            painter.setFont(QFont(default_font, 18))
-            
-            # Tính toán kích thước container
-            text_width = painter.fontMetrics().horizontalAdvance(year_text) + 30  # Padding
-            container_height = 40  # Giảm chiều cao container cho phù hợp với font size nhỏ hơn
-            
-            # Đặt container ở dưới cùng của nền xanh
-            x = (IMAGE_WIDTH - text_width) // 2  # Căn giữa container
-            y = IMAGE_HEIGHT - container_height  # Cách bottom 10px
-            
-            # Vẽ container với viền đen và nền vàng
-            path = QPainterPath()
-            path.addRoundedRect(x, y, text_width, container_height, 20, 20)  # Bo góc 15px
-            
-            # Vẽ nền vàng
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(QColor("#FFE500"))
-            painter.drawPath(path)
-            
-            # Vẽ viền đen
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(Qt.NoBrush)
-            painter.drawPath(path)
-
-            # Vẽ text năm sinh
-            painter.setPen(Qt.black)
-            painter.drawText(x + 16, y + container_height - 13, year_text)
-
-        painter.end()
-        self.image_label.setPixmap(temp_pixmap)
-
-    def accept(self):
-        # Tạo thư mục temp/images nếu chưa tồn tại
-        temp_dir = os.path.join("temp", "images")
-        os.makedirs(temp_dir, exist_ok=True)
-
-        # Tạo tên file mới với timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.temp_image_path = os.path.join(temp_dir, f"edited_{timestamp}.png")
-
-        # Lưu ảnh đã chỉnh sửa
-        self.image_label.pixmap().save(self.temp_image_path)
-        super().accept()
-
-    def get_text(self):
-        return self.text_input.text(), self.year_input.text(), self.temp_image_path
-
 
 class VideoItemWidget(QWidget):
     def __init__(self, video_name, parent=None):
@@ -380,6 +212,9 @@ class Widget(QWidget):
         super().__init__(parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+
+        # Căn giữa cửa sổ
+        self.center_window()
 
         # Thay thế QListWidget mặc định bằng CustomListWidget
         self.media_list = CustomListWidget()
@@ -437,6 +272,26 @@ class Widget(QWidget):
         # Ẩn group box progress mặc định
         self.ui.gro_progress.hide()
 
+    def center_window(self):
+        # Lấy kích thước màn hình
+        screen = QApplication.primaryScreen().geometry()
+        screen_width = screen.width()
+        screen_height = screen.height()
+
+        # Tính toán kích thước mới cho cửa sổ (2/3 width, 4/5 height của màn hình)
+        window_width = int(screen_width * 1/2)
+        window_height = int(screen_height * 5/6)
+        
+        # Đặt kích thước mới cho cửa sổ
+        self.resize(window_width, window_height)
+        
+        # Tính toán vị trí để căn giữa
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        # Di chuyển cửa sổ đến vị trí giữa màn hình
+        self.move(x, y-30)
+
     def load_exported_videos(self):
         exports_dir = "./temp/exports"
         # Tạo thư mục exports nếu chưa tồn tại
@@ -486,7 +341,7 @@ class Widget(QWidget):
     
         if file_path:
             if file_path.lower().endswith((".png", ".jpg", ".jpeg")):
-                dialog = TextInputDialog(file_path, self.media_items, self)
+                dialog = TextInputDialog(file_path, self.media_items, IMAGE_WIDTH, IMAGE_HEIGHT, BLUE_WIDTH, BLUE_HEIGHT, self)
                 if dialog.exec() == QDialog.Accepted:
                     text, year, edited_image_path = dialog.get_text()
                     display_text = f"{year}\n{text}" if year else text
@@ -575,6 +430,9 @@ class Widget(QWidget):
             self.background_music,
             video_config  # Truyền cấu hình video vào worker
         )
+        def ptest(msg):
+            print("String: ", msg)
+        self.video_worker.msg.connect(lambda msg: ptest(msg))
         self.video_worker.progress.connect(lambda msg: self.update_progress(msg, progress_item))
         self.video_worker.finished.connect(
             lambda success, msg: self.on_video_finished(success, msg, progress_item)
