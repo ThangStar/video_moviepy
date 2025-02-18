@@ -143,36 +143,36 @@ class MediaItemWidget(QWidget):
         self.setFixedSize(170, 200)  # Đảm bảo kích thước nhỏ hơn grid size
 
 
-class CustomListWidget(QListWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setViewMode(QListView.IconMode)
-        self.setSpacing(10)  # Giảm khoảng cách giữa các items từ 15 xuống 10
-        self.setResizeMode(QListView.Adjust)
-        self.setWrapping(True)
-        self.setMovement(QListView.Static)
-        self.setMinimumHeight(300)
+# class CustomListWidget(QListWidget):
+#     def __init__(self, parent=None):
+#         super().__init__(parent)
+#         self.setViewMode(QListView.IconMode)
+#         self.setSpacing(10)  # Giảm khoảng cách giữa các items từ 15 xuống 10
+#         self.setResizeMode(QListView.Adjust)
+#         self.setWrapping(True)
+#         self.setMovement(QListView.Static)
+#         self.setMinimumHeight(300)
         
-        # Thêm các thuộc tính mới để fix lỗi đè item
-        self.setUniformItemSizes(True)  # Đảm bảo các item có kích thước đồng nhất
-        self.setGridSize(QSize(200, 250))  # Đặt kích thước grid lớn hơn item size
-        self.setFlow(QListView.LeftToRight)  # Sắp xếp từ trái sang phải
-        self.setHorizontalScrollMode(QListView.ScrollPerPixel)
-        self.setVerticalScrollMode(QListView.ScrollPerPixel)
+#         # Thêm các thuộc tính mới để fix lỗi đè item
+#         self.setUniformItemSizes(True)  # Đảm bảo các item có kích thước đồng nhất
+#         self.setGridSize(QSize(200, 250))  # Đặt kích thước grid lớn hơn item size
+#         self.setFlow(QListView.LeftToRight)  # Sắp xếp từ trái sang phải
+#         self.setHorizontalScrollMode(QListView.ScrollPerPixel)
+#         self.setVerticalScrollMode(QListView.ScrollPerPixel)
         
-        # Thêm style sheet để fix highlight bị lệch
-        self.setStyleSheet("""
-            QListWidget::item {
-                border: 1px solid transparent;
-                margin: 0px;
-                padding: 0px;
-            }
-            QListWidget::item:selected {
-                background-color: #e0e0e0;
-                border-radius: 6px;
-                border: 1px solid #ccc;
-            }
-        """)
+#         # Thêm style sheet để fix highlight bị lệch
+#         self.setStyleSheet("""
+#             QListWidget::item {
+#                 border: 1px solid transparent;
+#                 margin: 0px;
+#                 padding: 0px;
+#             }
+#             QListWidget::item:selected {
+#                 background-color: #e0e0e0;
+#                 border-radius: 6px;
+#                 border: 1px solid #ccc;
+#             }
+#         """)
 
 
 
@@ -216,12 +216,32 @@ class Widget(QWidget):
         # Căn giữa cửa sổ
         self.center_window()
 
-        # Thay thế QListWidget mặc định bằng CustomListWidget
-        self.media_list = CustomListWidget()
-        layout = self.ui.widget1.layout()
-        layout.replaceWidget(self.ui.mediaList, self.media_list)
-        self.ui.mediaList.deleteLater()
-        self.ui.mediaList = self.media_list
+        # Thiết lập grid view cho mediaList
+        self.ui.mediaList.setViewMode(QListView.IconMode)
+        self.ui.mediaList.setSpacing(10)
+        self.ui.mediaList.setResizeMode(QListView.Adjust)
+        self.ui.mediaList.setWrapping(True)
+        self.ui.mediaList.setMovement(QListView.Static)
+        self.ui.mediaList.setUniformItemSizes(True)
+        self.ui.mediaList.setGridSize(QSize(200, 220))  # Kích thước grid lớn hơn item
+        self.ui.mediaList.setFlow(QListView.LeftToRight)
+        
+        # Style cho grid view
+        self.ui.mediaList.setStyleSheet("""
+            QListWidget {
+                background-color: #f5f5f5;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+            }
+            QListWidget::item {
+                border: none;
+                background-color: transparent;
+            }
+            QListWidget::item:selected {
+                background-color: transparent;
+            }
+        """)
 
         # Thiết lập style cho cửa sổ chính
         self.setStyleSheet("""
@@ -271,6 +291,10 @@ class Widget(QWidget):
 
         # Ẩn group box progress mặc định
         self.ui.gro_progress.hide()
+
+        # Kết nối các nút xóa
+        self.ui.clearResourcesButton.clicked.connect(self.clear_resources)
+        self.ui.clearVideosButton.clicked.connect(self.clear_videos)
 
     def center_window(self):
         # Lấy kích thước màn hình
@@ -526,6 +550,63 @@ class Widget(QWidget):
                     "Lỗi",
                     "Không tìm thấy file video. File có thể đã bị xóa hoặc di chuyển."
                 )
+
+    def clear_resources(self):
+        # Hiển thị hộp thoại xác nhận
+        reply = QMessageBox.question(
+            self,
+            "Xác nhận xóa",
+            "Bạn có chắc chắn muốn xóa tất cả tài nguyên?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        
+        if reply == QMessageBox.Yes:
+            # Xóa tất cả file PNG trong thư mục temp/images
+            images_dir = "./temp/images"
+            if os.path.exists(images_dir):
+                for file_name in os.listdir(images_dir):
+                    if file_name.lower().endswith('.png'):
+                        try:
+                            os.remove(os.path.join(images_dir, file_name))
+                        except Exception as e:
+                            print(f"Lỗi khi xóa file {file_name}: {str(e)}")
+            
+            # Xóa danh sách tài nguyên và làm trống list widget
+            self.media_items.clear()
+            self.ui.mediaList.clear()
+            
+            # Reset trạng thái nhạc nền
+            self.background_music = None
+            self.ui.sound_status.setText("Nhạc nền: Chưa có")
+            
+            QMessageBox.information(self, "Thành công", "Đã xóa tất cả tài nguyên!")
+
+    def clear_videos(self):
+        # Hiển thị hộp thoại xác nhận
+        reply = QMessageBox.question(
+            self,
+            "Xác nhận xóa",
+            "Bạn có chắc chắn muốn xóa tất cả video đã xuất?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        
+        if reply == QMessageBox.Yes:
+            # Xóa tất cả file MP4 trong thư mục temp/exports
+            exports_dir = "./temp/exports"
+            if os.path.exists(exports_dir):
+                for file_name in os.listdir(exports_dir):
+                    if file_name.lower().endswith('.mp4'):
+                        try:
+                            os.remove(os.path.join(exports_dir, file_name))
+                        except Exception as e:
+                            print(f"Lỗi khi xóa file {file_name}: {str(e)}")
+            
+            # Làm trống list widget video
+            self.ui.videoList.clear()
+            
+            QMessageBox.information(self, "Thành công", "Đã xóa tất cả video!")
 
 
 if __name__ == "__main__":

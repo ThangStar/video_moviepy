@@ -1,3 +1,7 @@
-inference-sdk
 opencv-python
+numpy
+auto-py-to-exe
+PySide6
+moviepy
+inference_sdk
 numpy

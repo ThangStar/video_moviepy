@@ -102,8 +102,8 @@ class Ui_Dialog(object):
         self.threadsSpinBox.setObjectName(u"threadsSpinBox")
         self.threadsSpinBox.setMinimumSize(QSize(200, 37))
         self.threadsSpinBox.setMinimum(1)
-        self.threadsSpinBox.setMaximum(32)
-        self.threadsSpinBox.setValue(16)
+        self.threadsSpinBox.setMaximum(200)
+        self.threadsSpinBox.setValue(20)
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.threadsSpinBox)
 

@@ -24,9 +24,10 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(536, 668)
+        Form.resize(940, 668)
         self.verticalLayout_3 = QVBoxLayout(Form)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(-1, -1, -1, 0)
         self.widget_3 = QWidget(Form)
         self.widget_3.setObjectName(u"widget_3")
         self.verticalLayout_4 = QVBoxLayout(self.widget_3)
@@ -39,6 +40,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.addButton = QPushButton(self.widget_4)
         self.addButton.setObjectName(u"addButton")
+        self.addButton.setMaximumSize(QSize(200, 16777215))
         font = QFont()
         font.setPointSize(11)
         font.setBold(True)
@@ -139,6 +141,7 @@ class Ui_Form(object):
 
         self.add_sound = QPushButton(self.widget_4)
         self.add_sound.setObjectName(u"add_sound")
+        self.add_sound.setMaximumSize(QSize(200, 16777215))
         self.add_sound.setFont(font)
         self.add_sound.setStyleSheet(u"QPushButton#add_sound {\n"
 "    background-color: #2196F3;\n"
@@ -158,7 +161,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.add_sound)
 
 
-        self.verticalLayout_4.addWidget(self.widget_4)
+        self.verticalLayout_4.addWidget(self.widget_4, 0, Qt.AlignLeft)
 
         self.sound_status = QLabel(self.widget_3)
         self.sound_status.setObjectName(u"sound_status")
@@ -318,6 +321,67 @@ class Ui_Form(object):
 
         self.verticalLayout_3.addWidget(self.widget)
 
+        self.clear_group = QWidget(Form)
+        self.clear_group.setObjectName(u"clear_group")
+        self.horizontalLayout_4 = QHBoxLayout(self.clear_group)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.clearResourcesButton = QPushButton(self.clear_group)
+        self.clearResourcesButton.setObjectName(u"clearResourcesButton")
+        self.clearResourcesButton.setFont(font)
+        self.clearResourcesButton.setStyleSheet(u"QPushButton#clearResourcesButton {\n"
+"    background-color: #f44336;\n"
+"    color: white;\n"
+"    border-radius: 6px;\n"
+"    padding: 8px 15px;\n"
+"    font-size: 11pt;\n"
+"}\n"
+"QPushButton#clearResourcesButton:hover {\n"
+"    background-color: #e53935;\n"
+"}\n"
+"QPushButton#clearResourcesButton:pressed {\n"
+"    background-color: #d32f2f;\n"
+"}")
+
+        self.horizontalLayout_4.addWidget(self.clearResourcesButton)
+
+        self.widget_5 = QWidget(self.clear_group)
+        self.widget_5.setObjectName(u"widget_5")
+
+        self.horizontalLayout_4.addWidget(self.widget_5)
+
+        self.widget_6 = QWidget(self.clear_group)
+        self.widget_6.setObjectName(u"widget_6")
+
+        self.horizontalLayout_4.addWidget(self.widget_6)
+
+        self.widget_7 = QWidget(self.clear_group)
+        self.widget_7.setObjectName(u"widget_7")
+
+        self.horizontalLayout_4.addWidget(self.widget_7)
+
+        self.clearVideosButton = QPushButton(self.clear_group)
+        self.clearVideosButton.setObjectName(u"clearVideosButton")
+        self.clearVideosButton.setFont(font)
+        self.clearVideosButton.setStyleSheet(u"QPushButton#clearVideosButton {\n"
+"    background-color: #f44336;\n"
+"    color: white;\n"
+"    border-radius: 6px;\n"
+"    padding: 8px 15px;\n"
+"    font-size: 11pt;\n"
+"}\n"
+"QPushButton#clearVideosButton:hover {\n"
+"    background-color: #e53935;\n"
+"}\n"
+"QPushButton#clearVideosButton:pressed {\n"
+"    background-color: #d32f2f;\n"
+"}")
+
+        self.horizontalLayout_4.addWidget(self.clearVideosButton)
+
+
+        self.verticalLayout_3.addWidget(self.clear_group)
+
         self.gro_progress = QGroupBox(Form)
         self.gro_progress.setObjectName(u"gro_progress")
         self.verticalLayout_5 = QVBoxLayout(self.gro_progress)
@@ -357,7 +421,7 @@ class Ui_Form(object):
 "        background-color: #1976d2;\n"
 "      }")
         icon = QIcon()
-        icon.addFile(u"icons/video-camera.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u"C:/Users/ADMIN/.designer/backup/icons/video-camera.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.createVideoButton.setIcon(icon)
         self.createVideoButton.setIconSize(QSize(24, 24))
 
@@ -386,9 +450,11 @@ class Ui_Form(object):
         self.speed_label.setText(QCoreApplication.translate("Form", u"T\u1ed1c \u0111\u1ed9 video (x):", None))
         self.label.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-size:10pt; font-weight:400;\">T\u00e0i nguy\u00ean</span></p></body></html>", None))
         self.label_2.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-size:10pt;\">Video \u0111\u00e3 xu\u1ea5t</span></p></body></html>", None))
+        self.clearResourcesButton.setText(QCoreApplication.translate("Form", u"X\u00f3a t\u00e0i nguy\u00ean", None))
+        self.clearVideosButton.setText(QCoreApplication.translate("Form", u"X\u00f3a video", None))
         self.gro_progress.setTitle(QCoreApplication.translate("Form", u"Tr\u1ea1ng th\u00e1i", None))
         self.lbe_progress.setText(QCoreApplication.translate("Form", u"<html><head/><body><p>\u0110ang xu\u1ea5t video..</p></body></html>", None))
         self.createVideoButton.setText(QCoreApplication.translate("Form", u"  T\u1ea0O VIDEO", None))
-        self.footer_label.setText(QCoreApplication.translate("Form", u"@TSTool | version: 1.0.1", None))
+        self.footer_label.setText(QCoreApplication.translate("Form", u"@TSTool | version: 1.0.2", None))
     # retranslateUi
 

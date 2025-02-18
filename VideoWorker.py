@@ -129,7 +129,7 @@ class VideoWorker(QThread):
             
             # Tính toán tổng khoảng cách cần di chuyển
             total_distance = last_image_width + self.TOTAL_WIDTH
-            move_speed = 15  # pixels/giây
+            move_speed = 20  # pixels/giây
             
             # Tính thời gian di chuyển dựa trên tổng khoảng cách
             extra_duration_for_fifth_image = total_distance / move_speed
@@ -182,9 +182,15 @@ class VideoWorker(QThread):
                 if t < start_time:
                     return (self.TOTAL_WIDTH, 0)
                 elif local_t < 5.1 and not self.is_last_image:
-                    if index >= 4 and self.is_last_image == False:
+                    if index > 3:
                         self.is_last_image = True
                         return (4 * self.IMAGE_WIDTH + self.IMAGE_WIDTH, 0)
+                    elif index == 3:
+                        final_x = index * self.IMAGE_WIDTH
+                        progress = local_t / 3.3
+                        eased_progress = 1 - (1 - progress) * (1 - progress)
+                        current_x = self.TOTAL_WIDTH - (self.TOTAL_WIDTH - final_x) * eased_progress
+                        return (current_x, 0)
                     elif index < 4:
                         final_x = index * self.IMAGE_WIDTH
                         progress = local_t / 5
@@ -200,9 +206,9 @@ class VideoWorker(QThread):
                     else:
                         initial_x = 4 * self.IMAGE_WIDTH + (index - 4) * self.IMAGE_WIDTH
                     
-                    time_since_movement = current_time - (5 * image_duration)
+                    time_since_movement = current_time - (5 * image_duration) + 1
                     if time_since_movement > 0:
-                        move_speed = 15
+                        move_speed = 20
                         move_distance = time_since_movement * move_speed
                         new_x = initial_x - move_distance
                         # Bỏ giới hạn vị trí tối thiểu để hình cuối có thể di chuyển hết màn hình
@@ -260,7 +266,7 @@ class VideoWorker(QThread):
             fps=self.video_config["fps"],
             codec="libx264",
             audio_codec="aac",
-            preset="ultrafast",
+            preset="medium",
             threads=self.video_config["threads"],
             bitrate=self.video_config["bitrate"],
             ffmpeg_params=[
